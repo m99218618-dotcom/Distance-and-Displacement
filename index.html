@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHYS101iE | Cartesian Motion and Resultant Vector Explorer</title>
+<style>
+:root{
+  --blue:#123b89;--navy:#0f2759;--orange:#ea8b33;--green:#11846f;--red:#d94756;
+  --ink:#23344d;--muted:#657890;--line:#d8e2f1;--bg:#eff4fb;--card:#ffffff;
+}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#10285b,#184ba0);color:#fff;border-bottom:5px solid var(--orange);padding:20px 24px}
+header .wrap{max-width:1380px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-size:12px;letter-spacing:1.6px;color:#ffc58b}
+header h1{margin:4px 0 6px;font-size:clamp(25px,3vw,38px);line-height:1.15}
+header p{margin:0;color:#d7e6ff}
+.badge{border:1px solid #86a2d4;border-radius:12px;padding:12px 16px;text-align:center;min-width:180px}
+main{max-width:1380px;margin:18px auto;padding:0 14px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+.column{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 20px rgba(20,53,111,.08);overflow:hidden}
+.head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.head h2{margin:0;font-size:18px;color:var(--navy)}
+.body{padding:16px 18px}
+.chip{font-size:12px;padding:5px 10px;border-radius:999px;background:#eef4ff;border:1px solid #d6e3f6;color:var(--blue);font-weight:700}
+.modebar,.graphbar,.inputbar{display:flex;gap:6px;flex-wrap:wrap}
+.modebar button,.graphbar button,.inputbar button{border:1px solid #d3e0f4;background:#eff5ff;color:var(--blue);padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+.modebar button.active,.graphbar button.active,.inputbar button.active{background:var(--blue);color:#fff}
+.stage{height:500px;border:1px solid #e2eaf6;border-radius:14px;background:linear-gradient(#fff,#f9fbff);overflow:hidden}
+.plot{height:250px;border:1px solid #e2eaf6;border-radius:14px;background:#fff}
+canvas{width:100%;height:100%;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:12px 0 0}
+.key{display:inline-block;width:15px;height:4px;border-radius:999px;vertical-align:middle;margin-right:5px}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid #cfdcf0;background:#fff;color:var(--blue);padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f0ba6d;outline-offset:2px}
+#scrub{flex:1;min-width:130px;accent-color:var(--orange)}
+.note{font-size:12px;color:var(--muted)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:#f5f8fe;border:1px solid #e2eaf4;border-radius:12px;padding:12px}
+.stat small{display:block;color:var(--muted);font-size:12px}
+.stat .value{margin:5px 0;font-weight:800;font-size:clamp(16px,2.4vw,25px);color:var(--blue)}
+.stat.orange .value{color:#c16a1d}.stat.green .value{color:var(--green)}.stat.red .value{color:var(--red)}
+.equation{margin-top:12px;padding:12px;background:#eef4ff;border-left:4px solid var(--orange);border-radius:7px;line-height:1.7}
+.field{margin-bottom:11px}.field label{display:block;font-size:12px;color:#596c84;font-weight:700;margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px;border:1px solid #cfdcf0;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{flex:1}
+.tablewrap{max-height:230px;overflow:auto;border:1px solid #e1e9f5;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 8px;border-bottom:1px solid #edf2fa;text-align:center}
+th{position:sticky;top:0;background:#f6f9ff;color:var(--navy)}
+.examples button{display:block;width:100%;text-align:left;background:#f8fbff;border:1px solid #dbe6f4;border-radius:10px;padding:11px;margin:7px 0;color:var(--navy);cursor:pointer}
+.examples button:hover{background:#eef5ff;border-color:#9cb9e5}
+.examples button.active{background:#dfeeff;border-color:#6f97d9}
+.alert{padding:10px 12px;background:#fff8ec;border-left:4px solid var(--orange);border-radius:8px;color:#6a5b34;font-size:13px}
+.answer{display:none;padding:10px;border-radius:8px;background:#eaf8f2;color:#175f50;font-size:13px;margin-top:8px}.answer.show{display:block}
+@media(max-width:1080px){main{grid-template-columns:1fr}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.stage{height:360px}.grid4{grid-template-columns:1fr 1fr}.body{padding:12px}.head{padding:13px}.badge{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <div class="brand">A’SHARQIYAH UNIVERSITY · INTERACTIVE PHYSICS LAB</div>
+      <h1>Cartesian Motion and Resultant Vector Explorer</h1>
+      <p>PHYS101iE — Physics I · Distance and Displacement · All Coordinates / All Quadrants</p>
+    </div>
+    <div class="badge">PHYS101iE<br>Vector Resultant Simulation</div>
+  </div>
+</header>
+
+<main>
+  <section class="column">
+    <div class="card">
+      <div class="head">
+        <h2>Motion on the Cartesian plane</h2>
+        <div class="modebar" id="axisModes">
+          <button data-axis="all" class="active">All quadrants</button>
+          <button data-axis="x">X-axis only</button>
+          <button data-axis="y">Y-axis only</button>
+        </div>
+      </div>
+      <div class="body">
+        <div class="alert" id="modeText">Use the full x–y plane. Add steps in any quadrant and the simulation will calculate the resultant automatically.</div>
+        <div class="stage"><canvas id="stage"></canvas></div>
+        <div class="legend">
+          <span><i class="key" style="background:#ea8b33"></i>Actual path / distance</span>
+          <span><i class="key" style="background:#1858b2"></i>Resultant displacement</span>
+          <span><i class="key" style="background:#6f7f97"></i>Step vectors</span>
+          <span>🟢 Start</span><span>🔴 Current / final point</span>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="play">▶ Play</button>
+          <button class="btn" id="restart">↺ Restart</button>
+          <button class="btn" id="step">Step +1 s</button>
+          <label class="note">Speed
+            <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+          </label>
+          <input id="scrub" type="range" min="0" max="1000" value="0">
+          <span class="note" id="timeLabel">0.0 s</span>
+        </div>
+        <p class="note">Assumption: each 1 m of path takes 1 s. The object moves at constant speed along each segment.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><h2>Live resultant values</h2><span class="chip" id="status">At start</span></div>
+      <div class="body">
+        <div class="grid4">
+          <div class="stat orange"><small>Total distance</small><div class="value" id="distance">0.0 m</div><small>Path length</small></div>
+          <div class="stat"><small>Resultant magnitude</small><div class="value" id="resultant">0.0 m</div><small>|R|</small></div>
+          <div class="stat"><small>Resultant x-component</small><div class="value" id="rx">0.0 m</div><small>Rₓ</small></div>
+          <div class="stat green"><small>Resultant y-component</small><div class="value" id="ry">0.0 m</div><small>Rᵧ</small></div>
+          <div class="stat red"><small>Direction from +x</small><div class="value" id="theta">0.0°</div><small>Counterclockwise</small></div>
+          <div class="stat"><small>Final quadrant</small><div class="value" id="quadrant">Origin</div><small>Based on final point</small></div>
+          <div class="stat"><small>Final x position</small><div class="value" id="xf">0.0 m</div><small>x</small></div>
+          <div class="stat"><small>Final y position</small><div class="value" id="yf">0.0 m</div><small>y</small></div>
+        </div>
+        <div class="equation" id="equation">R = Rₓ î + Rᵧ ĵ, |R| = √(Rₓ² + Rᵧ²), θ = tan⁻¹(Rᵧ / Rₓ).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">
+        <h2>Component graph</h2>
+        <div class="graphbar" id="graphButtons">
+          <button data-graph="x" class="active">x(t)</button>
+          <button data-graph="y">y(t)</button>
+          <button data-graph="r">|R|(t)</button>
+        </div>
+      </div>
+      <div class="body">
+        <div class="plot"><canvas id="graph"></canvas></div>
+        <p class="note" id="graphNote">The x(t) graph shows the horizontal coordinate as time changes.</p>
+      </div>
+    </div>
+  </section>
+
+  <aside class="column">
+    <div class="card">
+      <div class="head"><h2>Add movement</h2></div>
+      <div class="body">
+        <div class="inputbar" id="inputModes">
+          <button data-input="components" class="active">By components</button>
+          <button data-input="polar">By magnitude & angle</button>
+        </div>
+
+        <div id="componentsFields" style="margin-top:12px">
+          <div class="twocol">
+            <div class="field"><label for="dxInput">Δx (m)</label><input id="dxInput" type="number" value="4" step="0.1"></div>
+            <div class="field"><label for="dyInput">Δy (m)</label><input id="dyInput" type="number" value="3" step="0.1"></div>
+          </div>
+        </div>
+
+        <div id="polarFields" style="display:none;margin-top:12px">
+          <div class="twocol">
+            <div class="field"><label for="magInput">Magnitude (m)</label><input id="magInput" type="number" value="5" step="0.1" min="0"></div>
+            <div class="field"><label for="angInput">Angle from +x (°)</label><input id="angInput" type="number" value="45" step="1"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="addVector">+ Add step</button>
+          <button class="btn" id="undo">Undo</button>
+          <button class="btn" id="clear">Clear</button>
+        </div>
+        <p class="note">Each added step becomes part of the path. The blue arrow always shows the resultant from the origin to the current point.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><h2>Journey / vector table</h2><span class="chip" id="vectorCount">0 steps</span></div>
+      <div class="body">
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Δx</th><th>Δy</th><th>|Step|</th><th>Angle</th></tr>
+            </thead>
+            <tbody id="tableBody"><tr><td colspan="5">No steps added yet.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="note" id="pathSummary" style="margin-top:10px">Add vectors to build the motion path.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><h2>Ready examples</h2></div>
+      <div class="body examples">
+        <button data-example="tri" class="active">4 m east, then 3 m north</button>
+        <button data-example="car">100 m east, then 50 m west</button>
+        <button data-example="quad2">5 m west, then 7 m north</button>
+        <button data-example="quad3">6 m west, then 4 m south</button>
+        <button data-example="quad4">8 m east, then 5 m south</button>
+        <button data-example="mix">Mixed path in several quadrants</button>
+        <button data-example="polar">Two angled vectors</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><h2>Quick check</h2></div>
+      <div class="body">
+        <div class="alert" id="question">Loading question…</div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn primary" id="showAnswer">Show answer</button>
+          <button class="btn" id="nextQuestion">Next question</button>
+        </div>
+        <div class="answer" id="answer"></div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id), PI=Math.PI;
+let axisMode='all', inputMode='components', graphMode='x';
+let steps=[], points=[{x:0,y:0,s:0}], totalDistance=0, travel=0, playing=false, lastTime=null, activeExample='tri';
+
+const examples={
+  tri:[{dx:4,dy:0},{dx:0,dy:3}],
+  car:[{dx:100,dy:0},{dx:-50,dy:0}],
+  quad2:[{dx:-5,dy:0},{dx:0,dy:7}],
+  quad3:[{dx:-6,dy:0},{dx:0,dy:-4}],
+  quad4:[{dx:8,dy:0},{dx:0,dy:-5}],
+  mix:[{dx:6,dy:2},{dx:-4,dy:5},{dx:-3,dy:-7},{dx:5,dy:-2}],
+  polar:[{dx:6*Math.cos(35*PI/180),dy:6*Math.sin(35*PI/180)},{dx:4*Math.cos(140*PI/180),dy:4*Math.sin(140*PI/180)}]
+};
+const questions=[
+  ['If Δx = 4 m and Δy = 3 m, what is the resultant magnitude?', 'R = √(4² + 3²) = 5 m.'],
+  ['If a body ends at x < 0 and y > 0, which quadrant is it in?', 'Quadrant II.'],
+  ['What is the difference between total distance and resultant displacement?', 'Distance is the total path length. Resultant displacement is the straight vector from start to finish.'],
+  ['If the final position is at the origin again, what is the resultant?', 'The resultant displacement is 0 m, even though the distance may be greater than 0.'],
+  ['How is direction measured here?', 'As an angle counterclockwise from the positive x-axis.']
+];
+let qIndex=0;
+
+function fmt(n){return (Math.abs(n)<1e-9?0:n).toFixed(1)}
+function deg(rad){return rad*180/PI}
+function quadrant(x,y){
+  const e=1e-9;
+  if(Math.abs(x)<e && Math.abs(y)<e) return 'Origin';
+  if(Math.abs(x)<e) return y>0?'On +y axis':'On −y axis';
+  if(Math.abs(y)<e) return x>0?'On +x axis':'On −x axis';
+  if(x>0&&y>0) return 'Quadrant I';
+  if(x<0&&y>0) return 'Quadrant II';
+  if(x<0&&y<0) return 'Quadrant III';
+  return 'Quadrant IV';
+}
+function normalizeAngle(a){a%=360; if(a<0)a+=360; return a}
+function currentPos(s){
+  if(!steps.length || s<=0) return {x:0,y:0};
+  for(let i=0;i<steps.length;i++){
+    const a=points[i], b=points[i+1];
+    if(s<=b.s || i===steps.length-1){
+      const span=(b.s-a.s)||1;
+      const u=Math.max(0,Math.min(1,(s-a.s)/span));
+      return {x:a.x+u*(b.x-a.x), y:a.y+u*(b.y-a.y)};
+    }
+  }
+  const p=points[points.length-1];
+  return {x:p.x,y:p.y};
+}
+function rebuild(){
+  points=[{x:0,y:0,s:0}];
+  let x=0,y=0,s=0;
+  steps.forEach(st=>{
+    x+=st.dx; y+=st.dy; s+=st.mag;
+    points.push({x,y,s});
+  });
+  totalDistance=s;
+  if(travel>totalDistance) travel=totalDistance;
+  updateTable(); render();
+}
+function updateTable(){
+  $('vectorCount').textContent=`${steps.length} step${steps.length===1?'':'s'}`;
+  const tbody=$('tableBody');
+  if(!steps.length){ tbody.innerHTML='<tr><td colspan="5">No steps added yet.</td></tr>'; $('pathSummary').textContent='Add vectors to build the motion path.'; return; }
+  tbody.innerHTML=steps.map((st,i)=>`<tr><td>${i+1}</td><td>${fmt(st.dx)}</td><td>${fmt(st.dy)}</td><td>${fmt(st.mag)}</td><td>${fmt(st.angle)}°</td></tr>`).join('');
+  const final=points[points.length-1];
+  $('pathSummary').textContent=`Current final position: (${fmt(final.x)}, ${fmt(final.y)}) m. Total distance = ${fmt(totalDistance)} m.`;
+}
+function addStep(dx,dy){
+  const mag=Math.hypot(dx,dy);
+  if(!(mag>0)) return;
+  const angle=normalizeAngle(deg(Math.atan2(dy,dx)));
+  steps.push({dx,dy,mag,angle});
+  travel=0; playing=false; lastTime=null; activeExample=''; highlightExamples(); rebuild();
+}
+function highlightExamples(){document.querySelectorAll('[data-example]').forEach(b=>b.classList.toggle('active',b.dataset.example===activeExample));}
+function loadExample(key){
+  activeExample=key; highlightExamples();
+  steps=[];
+  examples[key].forEach(v=>{
+    const dx=v.dx, dy=v.dy, mag=Math.hypot(dx,dy), angle=normalizeAngle(deg(Math.atan2(dy,dx)));
+    steps.push({dx,dy,mag,angle});
+  });
+  // adjust axis mode based on example if one-dimensional
+  const onlyX=steps.every(s=>Math.abs(s.dy)<1e-9), onlyY=steps.every(s=>Math.abs(s.dx)<1e-9);
+  axisMode=onlyX?'x':onlyY?'y':'all';
+  refreshAxisButtons();
+  travel=0; playing=false; lastTime=null; rebuild();
+}
+function refreshAxisButtons(){
+  document.querySelectorAll('[data-axis]').forEach(b=>b.classList.toggle('active',b.dataset.axis===axisMode));
+  $('modeText').textContent = axisMode==='all'
+    ? 'Use the full x–y plane. Add steps in any quadrant and the simulation will calculate the resultant automatically.'
+    : axisMode==='x'
+    ? 'X-axis only mode: only horizontal motion is allowed, so resultant is along x.'
+    : 'Y-axis only mode: only vertical motion is allowed, so resultant is along y.';
+}
+function refreshInputButtons(){document.querySelectorAll('[data-input]').forEach(b=>b.classList.toggle('active',b.dataset.input===inputMode)); $('componentsFields').style.display=inputMode==='components'?'block':'none'; $('polarFields').style.display=inputMode==='polar'?'block':'none';}
+function refreshGraphButtons(){document.querySelectorAll('[data-graph]').forEach(b=>b.classList.toggle('active',b.dataset.graph===graphMode)); $('graphNote').textContent = graphMode==='x' ? 'The x(t) graph shows the horizontal coordinate as time changes.' : graphMode==='y' ? 'The y(t) graph shows the vertical coordinate as time changes.' : 'The |R|(t) graph shows the magnitude of the current resultant displacement.';}
+function setAxisMode(m){axisMode=m; refreshAxisButtons(); if(axisMode==='x'){steps=steps.map(s=>({...s,dy:0,mag:Math.abs(s.dx),angle:normalizeAngle(deg(Math.atan2(0,s.dx)))}));} if(axisMode==='y'){steps=steps.map(s=>({...s,dx:0,mag:Math.abs(s.dy),angle:normalizeAngle(deg(Math.atan2(s.dy,0)))}));} rebuild();}
+
+function ctxFor(canvas){
+  const rect=canvas.getBoundingClientRect(), w=Math.max(10,rect.width), h=Math.max(10,rect.height), dpr=Math.min(2,window.devicePixelRatio||1);
+  canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+  const c=canvas.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+  return {c,w,h};
+}
+function arrow(c,x1,y1,x2,y2,color,width=3){
+  c.strokeStyle=color; c.fillStyle=color; c.lineWidth=width; c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+  const a=Math.atan2(y2-y1,x2-x1), s=10; c.beginPath(); c.moveTo(x2,y2); c.lineTo(x2-s*Math.cos(a-.45),y2-s*Math.sin(a-.45)); c.lineTo(x2-s*Math.cos(a+.45),y2-s*Math.sin(a+.45)); c.closePath(); c.fill();
+}
+function dot(c,x,y,color,r=7){c.beginPath(); c.arc(x,y,r,0,PI*2); c.fillStyle=color; c.fill(); c.strokeStyle='#fff'; c.lineWidth=2; c.stroke();}
+function drawStage(){
+  const {c,w,h}=ctxFor($('stage')); c.clearRect(0,0,w,h);
+  const cur=currentPos(travel);
+  const xs=[0,...points.map(p=>p.x),cur.x], ys=[0,...points.map(p=>p.y),cur.y];
+  let minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  let rx=Math.max(8,maxX-minX), ry=Math.max(8,maxY-minY);
+  if(axisMode==='x'){minY=-rx*.35; maxY=rx*.35; ry=maxY-minY;}
+  if(axisMode==='y'){minX=-ry*.35; maxX=ry*.35; rx=maxX-minX;}
+  const pad=54; const scale=Math.min((w-2*pad)/(rx*1.16),(h-2*pad)/(ry*1.16),45);
+  const cx=w/2-scale*(minX+maxX)/2, cy=h/2+scale*(minY+maxY)/2;
+  const P=p=>({x:cx+scale*p.x,y:cy-scale*p.y}); const O=P({x:0,y:0});
+
+  c.strokeStyle='#e7eef8'; c.lineWidth=1;
+  let grid=Math.pow(10,Math.floor(Math.log10(Math.max(rx,ry)/7))); if(!Number.isFinite(grid)||grid<=0) grid=1; if(Math.max(rx,ry)/grid>14) grid*=2; if(Math.max(rx,ry)/grid<5) grid/=2;
+  for(let x=Math.ceil(minX/grid)*grid;x<=maxX+grid/2;x+=grid){const X=cx+scale*x; c.beginPath(); c.moveTo(X,10); c.lineTo(X,h-10); c.stroke();}
+  for(let y=Math.ceil(minY/grid)*grid;y<=maxY+grid/2;y+=grid){const Y=cy-scale*y; c.beginPath(); c.moveTo(10,Y); c.lineTo(w-10,Y); c.stroke();}
+
+  arrow(c,14,O.y,w-18,O.y,'#adc1db',1.8);
+  arrow(c,O.x,h-14,O.x,16,'#adc1db',1.8);
+  c.fillStyle='#5b779b'; c.font='12px Segoe UI';
+  c.fillText('East (+x)',w-92,Math.max(18,Math.min(h-14,O.y-12)));
+  c.fillText('North (+y)',Math.max(14,Math.min(w-90,O.x+8)),18);
+  c.fillText('West (−x)',16,Math.max(18,Math.min(h-14,O.y-12)));
+  c.fillText('South (−y)',Math.max(14,Math.min(w-96,O.x+8)),h-16);
+
+  if(!steps.length){c.textAlign='center'; c.font='16px Segoe UI'; c.fillStyle='#6f8097'; c.fillText('Add vectors or choose an example',w/2,h/2-34); c.textAlign='left';}
+
+  // full step paths (gray)
+  for(let i=0;i<steps.length;i++){
+    const a=P(points[i]), b=P(points[i+1]);
+    arrow(c,a.x,a.y,b.x,b.y,'#9aa8bb',2.2);
+    c.fillStyle='#586f8e'; c.font='11px Segoe UI'; c.fillText(String(i+1),(a.x+b.x)/2+4,(a.y+b.y)/2-4);
+  }
+  // traveled path (orange)
+  let remain=travel;
+  for(let i=0;i<steps.length && remain>0;i++){
+    const len=Math.min(remain,steps[i].mag);
+    const a=points[i]; const unitX=steps[i].dx/steps[i].mag, unitY=steps[i].dy/steps[i].mag;
+    const partial={x:a.x+unitX*len, y:a.y+unitY*len};
+    const A=P(a), B=P(partial);
+    c.strokeStyle='#ea8b33'; c.lineWidth=5; c.lineCap='round'; c.beginPath(); c.moveTo(A.x,A.y); c.lineTo(B.x,B.y); c.stroke();
+    remain-=len;
+  }
+  // resultant
+  const C=P(cur);
+  if(Math.hypot(C.x-O.x,C.y-O.y)>12) arrow(c,O.x,O.y,C.x,C.y,'#1858b2',3.5);
+  dot(c,O.x,O.y,'#18a375'); dot(c,C.x,C.y,'#de4452');
+  c.fillStyle='#36557f'; c.font='12px Segoe UI'; c.fillText('START',O.x+10,O.y+18); c.fillText('OBJECT',C.x+8,C.y-12);
+}
+function graphValueAt(pos){ if(graphMode==='x') return pos.x; if(graphMode==='y') return pos.y; return Math.hypot(pos.x,pos.y); }
+function drawGraph(){
+  const {c,w,h}=ctxFor($('graph')); c.clearRect(0,0,w,h);
+  const current=currentPos(travel);
+  const vals=points.map(p=>graphValueAt(p)); vals.push(graphValueAt(current)); vals.push(0);
+  let lo=Math.min(...vals), hi=Math.max(...vals); if(Math.abs(hi-lo)<1e-9){lo-=1; hi+=1;} const m=Math.max(1,(hi-lo)*.17); const min=lo-m, max=hi+m;
+  const L=52,R=18,T=14,B=36, W=w-L-R, H=h-T-B;
+  const X=s=>L+W*(totalDistance ? s/totalDistance : 0), Y=v=>T+H*(max-v)/(max-min);
+  c.strokeStyle='#e1e9f5'; c.lineWidth=1; c.font='11px Segoe UI'; c.fillStyle='#647c99';
+  for(let i=0;i<=4;i++){const y=T+H*i/4; c.beginPath(); c.moveTo(L,y); c.lineTo(w-R,y); c.stroke(); c.textAlign='right'; c.fillText(fmt(max-(max-min)*i/4),L-6,y+3)}
+  for(let i=0;i<=5;i++){const s=totalDistance*i/5, x=X(s); c.beginPath(); c.moveTo(x,T); c.lineTo(x,h-B); c.stroke(); c.textAlign='center'; c.fillText(fmt(s),x,h-17)}
+  c.fillStyle='#365a88'; c.fillText('Time (s)',w/2,h-2); c.save(); c.translate(13,h/2); c.rotate(-PI/2); c.fillText(graphMode==='x'?'x position (m)':graphMode==='y'?'y position (m)':'|R| (m)',0,0); c.restore();
+  if(!steps.length) return;
+  c.strokeStyle='#b5c8e0'; c.lineWidth=2; c.setLineDash([5,5]); c.beginPath(); points.forEach((p,i)=>{const v=graphValueAt(p); if(i===0)c.moveTo(X(0),Y(v)); else c.lineTo(X(p.s),Y(v));}); c.stroke(); c.setLineDash([]);
+  c.strokeStyle='#175ab0'; c.lineWidth=3; c.beginPath(); c.moveTo(X(0),Y(0));
+  for(let i=1;i<points.length && points[i].s<=travel;i++){ c.lineTo(X(points[i].s),Y(graphValueAt(points[i]))); }
+  c.lineTo(X(travel),Y(graphValueAt(current))); c.stroke(); dot(c,X(travel),Y(graphValueAt(current)),'#ea8b33',5);
+}
+function render(){
+  const p=currentPos(travel), R=Math.hypot(p.x,p.y), th=R>1e-9?normalizeAngle(deg(Math.atan2(p.y,p.x))):0;
+  $('distance').textContent=fmt(travel)+' m'; $('resultant').textContent=fmt(R)+' m'; $('rx').textContent=fmt(p.x)+' m'; $('ry').textContent=fmt(p.y)+' m'; $('theta').textContent=fmt(th)+'°'; $('quadrant').textContent=quadrant(p.x,p.y); $('xf').textContent=fmt(p.x)+' m'; $('yf').textContent=fmt(p.y)+' m';
+  $('equation').textContent=`R = (${fmt(p.x)}) î + (${fmt(p.y)}) ĵ m.   |R| = √((${fmt(p.x)})² + (${fmt(p.y)})²) = ${fmt(R)} m.   Direction θ = ${fmt(th)}° from the +x axis.`;
+  $('timeLabel').textContent=fmt(travel)+' s'; $('scrub').value=totalDistance?Math.round(travel/totalDistance*1000):0; $('status').textContent=!travel?'At start':travel>=totalDistance?'Journey complete':'Moving'; $('play').textContent=playing?'❚❚ Pause':'▶ Play';
+  drawStage(); drawGraph();
+}
+function animate(ts){
+  if(lastTime!==null && playing && totalDistance){
+    travel=Math.min(totalDistance, travel + (ts-lastTime)/1000 * Number($('speed').value) * Math.max(1,totalDistance/14));
+    if(travel>=totalDistance) playing=false;
+    render();
+  }
+  lastTime=ts; requestAnimationFrame(animate);
+}
+
+// events
+Array.from(document.querySelectorAll('[data-axis]')).forEach(b=>b.addEventListener('click',()=>setAxisMode(b.dataset.axis)));
+Array.from(document.querySelectorAll('[data-input]')).forEach(b=>b.addEventListener('click',()=>{inputMode=b.dataset.input; refreshInputButtons();}));
+Array.from(document.querySelectorAll('[data-graph]')).forEach(b=>b.addEventListener('click',()=>{graphMode=b.dataset.graph; refreshGraphButtons(); render();}));
+Array.from(document.querySelectorAll('[data-example]')).forEach(b=>b.addEventListener('click',()=>loadExample(b.dataset.example)));
+$('addVector').addEventListener('click',()=>{
+  let dx=0,dy=0;
+  if(inputMode==='components'){
+    dx=Number($('dxInput').value); dy=Number($('dyInput').value);
+  } else {
+    const mag=Number($('magInput').value), ang=Number($('angInput').value)*PI/180; if(!(mag>0)) return;
+    dx=mag*Math.cos(ang); dy=mag*Math.sin(ang);
+  }
+  if(axisMode==='x') dy=0; if(axisMode==='y') dx=0;
+  if(!Number.isFinite(dx)||!Number.isFinite(dy)||Math.hypot(dx,dy)<=0) return;
+  addStep(dx,dy);
+});
+$('undo').onclick=()=>{if(steps.length){steps.pop(); travel=0; playing=false; lastTime=null; activeExample=''; highlightExamples(); rebuild();}};
+$('clear').onclick=()=>{steps=[]; travel=0; playing=false; lastTime=null; activeExample=''; highlightExamples(); rebuild();};
+$('play').onclick=()=>{if(!totalDistance)return; if(travel>=totalDistance) travel=0; playing=!playing; lastTime=null; render();};
+$('restart').onclick=()=>{travel=0; playing=false; lastTime=null; render();};
+$('step').onclick=()=>{playing=false; travel=Math.min(totalDistance,travel+1); render();};
+$('scrub').oninput=e=>{playing=false; travel=totalDistance*Number(e.target.value)/1000; render();};
+$('showAnswer').onclick=()=>{const a=$('answer'); a.classList.toggle('show'); $('showAnswer').textContent=a.classList.contains('show')?'Hide answer':'Show answer';};
+$('nextQuestion').onclick=()=>{qIndex=(qIndex+1)%questions.length; $('question').textContent=questions[qIndex][0]; $('answer').textContent=questions[qIndex][1]; $('answer').classList.remove('show'); $('showAnswer').textContent='Show answer';};
+window.addEventListener('resize',render);
+
+refreshAxisButtons(); refreshInputButtons(); refreshGraphButtons(); $('question').textContent=questions[0][0]; $('answer').textContent=questions[0][1]; loadExample('tri'); requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
